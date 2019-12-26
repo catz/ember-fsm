@@ -9,12 +9,12 @@ import Definition from './-definition';
 import { capitalCamelize, contains } from './utils';
 
 export default EmberObject.extend({
-  isTransitioning:   false,
-  events:            null,
-  states:            null,
+  isTransitioning: false,
+  events: null,
+  states: null,
   activeTransitions: null,
-  currentState:      null,
-  initialState:      null,
+  currentState: null,
+  initialState: null,
 
   init() {
     let target = this.get('target');
@@ -36,8 +36,8 @@ export default EmberObject.extend({
       events
     });
 
-    this.set('stateNames',   this.definition.stateNames);
-    this.set('eventNames',   this.definition.eventNames);
+    this.set('stateNames', this.definition.stateNames);
+    this.set('eventNames', this.definition.eventNames);
     this.set('currentState', this.get('initialState') || this.definition.initialState);
   },
 
@@ -56,7 +56,7 @@ export default EmberObject.extend({
     }
 
     transition = this.transitionFor(event, args);
-    sameState  = transition.toState === this.get('currentState');
+    sameState = transition.toState === this.get('currentState');
 
     if (this.get('isTransitioning') && !sameState) {
       throw new EmberError(
@@ -68,7 +68,7 @@ export default EmberObject.extend({
 
     promise = transition.perform();
 
-    promise.catch(function(error) {
+    promise.catch(function (error) {
       fsm.abortActiveTransitions();
       fsm.send('error', {
         error: error,
@@ -121,13 +121,13 @@ export default EmberObject.extend({
   },
 
   checkGuard(guardProperty, isInverse) {
-    let target     = this.get('target');
+    let target = this.get('target');
     let guardValue = target.get(guardProperty);
     let result;
 
     if (guardValue === undefined) {
       throw new Error(`expected guard "${guardProperty}" on target` +
-      `"${target}" to be defined`);
+        `"${target}" to be defined`);
     } else if (typeOf(guardValue) === 'function') {
       result = guardValue.call(this) ? true : false;
     } else {
@@ -171,26 +171,26 @@ export default EmberObject.extend({
     }
 
     outcomeParams.machine = this;
-    outcomeParams.target  = target;
+    outcomeParams.target = target;
 
     return outcomeParams;
   },
 
   transitionFor(event, args) {
     let currentState = this.get('currentState');
-    let potentials   = this.definition.transitionsFor(event, currentState);
+    let potentials = this.definition.transitionsFor(event, currentState);
     let transitionParams;
 
     if (!potentials.length) {
       throw new EmberError(`no transition is defined for event "${event}" ` +
-      `in state "${currentState}"`);
+        `in state "${currentState}"`);
     }
 
     transitionParams = this.outcomeOfPotentialTransitions(potentials);
 
     if (!transitionParams) {
       throw new EmberError('no unguarded transition was resolved for event ' +
-      `"${event}" in state "${currentState}"`);
+        `"${event}" in state "${currentState}"`);
     }
 
     transitionParams.eventArgs = args;
@@ -200,7 +200,7 @@ export default EmberObject.extend({
 
   inState(stateOrPrefix) {
     let currentState = this.definition.lookupState(this.get('currentState'));
-    let states       = this.definition.lookupStates(stateOrPrefix);
+    let states = this.definition.lookupStates(stateOrPrefix);
 
     return contains(states, currentState);
   },
@@ -209,7 +209,7 @@ export default EmberObject.extend({
     let currentState = this.definition.lookupState(this.get('currentState'));
     let potentials;
 
-    potentials = currentState.exitTransitions.filter(function(t) {
+    potentials = currentState.exitTransitions.filter(function (t) {
       return t.toState === state;
     });
 
@@ -228,9 +228,9 @@ export default EmberObject.extend({
     this.removeActiveTransition(transition);
   },
 
-  _setupIsStateAccessors: on('init', function() {
-    let mixin      = {};
-    let prefixes   = this.definition.stateNamespaces.slice(0);
+  _setupIsStateAccessors: on('init', function () {
+    let mixin = {};
+    let prefixes = this.definition.stateNamespaces.slice(0);
     let properties = [];
     let prefix;
     let i;
@@ -240,9 +240,9 @@ export default EmberObject.extend({
 
       properties.push(property);
 
-      mixin[property] = computed(function() {
+      mixin[property] = computed('currentState', function () {
         return this.inState(prefix);
-      }).property('currentState');
+      });
     }
 
     for (i = 0; i < this.definition.stateNames.length; i++) {
